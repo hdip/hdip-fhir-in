@@ -1,0 +1,102 @@
+buildscript {
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
+	}
+}
+
+
+plugins {
+	id 'java'
+//    id 'war'
+	id 'idea'
+	id 'application'
+	id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+
+group = 'com.hdip.in'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+mainClassName = 'com.hdip.in.Main'
+
+repositories {
+	mavenCentral()
+}
+configurations {
+	warOnly
+}
+dependencies {
+    implementation files ('lib/hapiFhirWar/WEB-INF/classes')
+    implementation fileTree ('lib/hapiFhirWar/WEB-INF/lib')
+	implementation 'org.springframework.kafka:spring-kafka:2.4.6.RELEASE'
+	compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+	warOnly 'ca.uhn.hapi.fhir:hapi-fhir-jpaserver-starter:4.2.0@war'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:8.0.47'
+}
+tasks.register("explodeFhir",Copy) {
+    from zipTree(configurations.warOnly.singleFile)
+    into "lib/hapiFhirWar"
+	exclude 'WEB-INF/classes/logback.xml' ,
+			'WEB-INF/classes/ca/uhn/fhir/to/FhirTesterMvcConfig.class',
+			'WEB-INF/classes/ca/uhn/fhir/jpa/starter/FhirTesterConfig.class'
+}
+clean {
+    delete "lib/hapiFhirWar"
+}
+tasks.register('copyJs',Copy){
+	from 'lib/hapiFhirWar/js'
+	into 'src/main/resources/js'
+}
+tasks.register('copyCss',Copy){
+	from 'lib/hapiFhirWar/css'
+	into 'src/main/resources/css'
+}
+tasks.register('copyImg',Copy){
+	from 'lib/hapiFhirWar/img'
+	into 'src/main/resources/img'
+}
+tasks.register('copyTemplates',Copy){
+	from 'lib/hapiFhirWar/WEB-INF/templates'
+	into 'src/main/resources/templates'
+}
+tasks.create("listDeps"){
+    configurations.compileClasspath.each{
+//        c -> println ('-'+ c )
+//		c -> c.each {println(it)}
+    }
+}
+
+compileJava {
+    dependsOn explodeFhir
+    dependsOn copyJs
+	dependsOn copyCss
+	dependsOn copyImg
+	dependsOn copyTemplates
+}
+jar{
+	manifest{
+		attributes('Main-Class':'com.hdip.in.Main')
+	}
+}
+shadowJar {
+	zip64=true
+    mergeServiceFiles()
+	dependencies {
+		exclude(dependency('ca.uhn.hapi.fhir:hapi-fhir-jpaserver-starter:4.2.0@war'))
+	}
+}
+/*war {
+	from ('src/main/resources'){
+		exclude 'logback.xml','hapi.properties'
+	}
+	webInf {
+		from ('src/main/resources'){
+			include 'logback.xml','hapi.properties'
+			into 'classes'
+		}
+	}
+}
+*/
+
+test {
+	useJUnitPlatform()
+}
