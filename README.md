@@ -219,3 +219,8 @@ I suggest running it with sufficient memory.
 
 
 Now you can navigate to the Patient link, paste a Patient resource and click create. If you have way to view kafka messages (I use kafdrop), you can see the messages queued up in the kafka topic.
+
+
+![Screen-Shot-2020-05-29-at-3 34 51-PM-2048x1045](https://user-images.githubusercontent.com/66193559/178157828-46c4e48f-4f0c-4a90-b261-4a29ccb8ebdd.png)
+
+![xScreen-Shot-2020-06-23-at-8 38 28-PM](https://user-images.githubusercontent.com/66193559/178157921-dac30ae6-0eb1-4d6e-bfe0-219dac0b7b74.png)
